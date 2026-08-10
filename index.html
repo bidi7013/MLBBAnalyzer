@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLBB Analytics Dashboard | Player Performance & Hero Database</title>
+  <meta name="description" content="Official 132 hero database, data-driven Mobile Legends: Bang Bang player profile analytics, and win rate calculator dashboard.">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Chart.js & Tesseract.js OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="brand-area">
+        <div class="brand-logo">ML</div>
+        <div class="brand-name">MLBB Analytics</div>
+      </div>
+
+      <div class="nav-section-title">Navigation</div>
+      <ul class="nav-menu">
+        <li class="nav-item active"><a href="#overview"><span class="nav-icon">📊</span> Overview</a></li>
+        <li class="nav-item"><a href="#matrix"><span class="nav-icon">⚡</span> Performance</a></li>
+        <li class="nav-item"><a href="#heroes"><span class="nav-icon">🛡️</span> Hero Mastery</a></li>
+        <li class="nav-item"><a href="#roster"><span class="nav-icon">📖</span> 132 Hero Database</a></li>
+        <li class="nav-item"><a href="#calculator"><span class="nav-icon">🎯</span> Goal Calculator</a></li>
+        <li class="nav-item"><a href="#diagnostics"><span class="nav-icon">💡</span> Diagnostics</a></li>
+        <li class="nav-item"><a href="#matches"><span class="nav-icon">📋</span> Match History</a></li>
+      </ul>
+
+      <div class="nav-section-title">Actions</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="#" id="btnOpenScanner"><span class="nav-icon">📷</span> Upload Screenshot</a></li>
+        <li class="nav-item"><a href="#" id="btnOpenManual"><span class="nav-icon">✏️</span> Custom Profile</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img id="sidebarAvatar" src="assets/heroes/fanny.png" alt="Avatar" class="sidebar-avatar">
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebarIgn">Xinnn_Vibe</span>
+            <span class="sidebar-user-status" id="sidebarRank">Mythical Immortal</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <!-- Top Header / Search -->
+      <header class="top-header">
+        <form id="searchForm" class="header-search">
+          <div class="search-input-wrap">
+            <input type="text" id="userIdInput" placeholder="User ID (e.g. 12345678)" value="12345678" required>
+          </div>
+          <div class="search-input-wrap" style="max-width: 180px;">
+            <input type="text" id="zoneIdInput" placeholder="Zone ID (e.g. 2024)" value="2024" required>
+          </div>
+          <button type="submit" class="btn btn-primary" id="btnAnalyze">Analyze</button>
+        </form>
+
+        <div class="header-actions">
+          <button type="button" class="btn btn-secondary" id="btnHeaderScanner">OCR Scan</button>
+          <button type="button" class="btn btn-secondary" id="btnHeaderManual">Custom Entry</button>
+        </div>
+      </header>
+
+      <!-- Main Body -->
+      <main class="content-body" id="overview">
+        <!-- Preset Profiles Bar -->
+        <div class="presets-bar">
+          <span class="preset-title">Quick Presets:</span>
+          <button type="button" class="preset-button active" data-preset="12345678_2024">Mythical Immortal (Carry)</button>
+          <button type="button" class="preset-button" data-preset="87654321_3012">Mythical Glory (Mage)</button>
+          <button type="button" class="preset-button" data-preset="55443322_1050">Mythic (Tank/Roam)</button>
+          <button type="button" class="preset-button" data-preset="99887766_4099">Epic V (Climber)</button>
+        </div>
+
+        <!-- Profile Overview Card -->
+        <section class="card profile-overview-card">
+          <div class="profile-main-meta">
+            <div class="avatar-container">
+              <img id="playerAvatar" src="assets/heroes/fanny.png" alt="Player Avatar">
+            </div>
+            <div class="profile-text-meta">
+              <h2 id="playerIgn">Xinnn_Vibe</h2>
+              <div class="profile-tags">
+                <span class="tag-item">Level <strong id="playerLevel">120</strong></span>
+                <span class="tag-item">ID: <strong id="displayUserId">12345678</strong> (<span id="displayZoneId">2024</span>)</span>
+                <span class="tag-item">Season: <strong id="displaySeason">Season 33</strong></span>
+                <span class="tag-item">Peak: <strong id="displayHighestRank">Mythical Immortal 185★</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-rank-badge-box">
+            <div>
+              <div class="rank-title" id="currentRankText">Mythical Immortal</div>
+              <div class="rank-subtitle" id="rankStarsText">128 Stars</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stats Metric Grid -->
+        <section class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Win Rate</span>
+            <span class="stat-value" id="statOverallWR">73.8%</span>
+            <span class="stat-trend">Season 33</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Total Matches</span>
+            <span class="stat-value" id="statTotalMatches">4,820</span>
+            <span class="stat-trend">Ranked & Classic</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">MVP Matches</span>
+            <span class="stat-value" id="statMvpCount">1,640</span>
+            <span class="stat-trend">34.0% of matches</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Savage / Maniac</span>
+            <span class="stat-value" id="statSavageManiac">42 / 189</span>
+            <span class="stat-trend">Career Total</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current Streak</span>
+            <span class="stat-value" id="statWinStreak">11 Wins</span>
+            <span class="stat-trend">Active</span>
+          </div>
+        </section>
+
+        <!-- Two Columns: Radar Performance & Win Rate Calculator -->
+        <section class="dashboard-columns" id="matrix">
+          <!-- 6-Axis Radar Card -->
+          <div class="card">
+            <div class="card-header-clean">
+              <span class="card-heading">Performance Matrix</span>
+              <span class="card-subtext" id="radarSubtitle">6-Axis Evaluation</span>
+            </div>
+            <div class="radar-wrapper">
+              <canvas id="radarChartCanvas"></canvas>
+            </div>
+            <div class="mmr-summary-bar">
+              <div>
+                <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Combat Index</div>
+                <div class="mmr-score" id="combatPowerScore">96.8 / 100</div>
+              </div>
+              <div class="grade-text" id="letterGradeBadge">Grade S+</div>
+            </div>
+          </div>
+
+          <!-- Win Rate Goal Calculator -->
+          <div class="card" id="calculator">
+            <div class="card-header-clean">
+              <span class="card-heading">Win Rate Calculator</span>
+              <span class="card-subtext">Target Estimation</span>
+            </div>
+
+            <div class="calc-grid-form">
+              <div class="field-group">
+                <label for="calcTotalMatches">Total Matches</label>
+                <input type="number" id="calcTotalMatches" value="4820" min="1">
+              </div>
+              <div class="field-group">
+                <label for="calcCurrentWR">Current Win Rate (%)</label>
+                <input type="number" id="calcCurrentWR" step="0.1" value="73.8" min="0" max="100">
+              </div>
+              <div class="field-group" style="grid-column: 1 / -1;">
+                <label for="calcTargetWR">Target Win Rate (%)</label>
+                <input type="number" id="calcTargetWR" step="0.1" value="75.0" min="0" max="99.9">
+              </div>
+            </div>
+
+            <div class="calc-output-box">
+              <div style="font-size: 12px; color: var(--text-dim); text-transform: uppercase;">Consecutive Wins Required</div>
+              <div class="calc-large-number" id="consecutiveWinsResult">232</div>
+              <div class="calc-note" id="calcSummaryText">
+                To achieve 75.0% win rate with a 100% win streak.
+              </div>
+              <div style="font-size: 11.5px; color: var(--text-dim); margin-top: 8px;" id="scenario80">
+                At 80% pace: ~1,160 matches
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Hero Mastery & Role Distribution -->
+        <section class="dashboard-columns" id="heroes">
+          <!-- Hero Pool Showcase -->
+          <div class="card">
+            <div class="card-header-clean">
+              <span class="card-heading">Hero Mastery</span>
+              <span class="card-subtext">Player's Top Pool</span>
+            </div>
+            <div class="filter-tabs" id="heroRoleFilters">
+              <button class="filter-tab-btn active" data-role="ALL">All</button>
+              <button class="filter-tab-btn" data-role="Assassin">Assassin</button>
+              <button class="filter-tab-btn" data-role="Marksman">Marksman</button>
+              <button class="filter-tab-btn" data-role="Fighter">Fighter</button>
+              <button class="filter-tab-btn" data-role="Mage">Mage</button>
+              <button class="filter-tab-btn" data-role="Tank">Tank</button>
+              <button class="filter-tab-btn" data-role="Support">Support</button>
+            </div>
+            <div class="heroes-list-grid" id="heroesGrid">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Role Distribution -->
+          <div class="card">
+            <div class="card-header-clean">
+              <span class="card-heading">Role Distribution</span>
+              <span class="card-subtext">Career Playtime</span>
+            </div>
+            <div class="roles-stack" id="roleDistributionWrap">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Complete 132 Hero Database Browser -->
+        <section class="card" id="roster">
+          <div class="card-header-clean">
+            <div>
+              <span class="card-heading">Official Hero Database</span>
+              <span class="card-subtext" style="display: block; margin-top: 2px;">
+                Integrated 132 Mobile Legends Heroes with official portraits & lane details
+              </span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <div class="search-input-wrap" style="padding: 5px 12px; width: 220px;">
+                <input type="text" id="rosterSearchInput" placeholder="Search hero...">
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-tabs" id="rosterRoleFilters">
+            <button class="filter-tab-btn active" data-roster-role="ALL">All (132)</button>
+            <button class="filter-tab-btn" data-roster-role="Fighter">Fighter</button>
+            <button class="filter-tab-btn" data-roster-role="Mage">Mage</button>
+            <button class="filter-tab-btn" data-roster-role="Assassin">Assassin</button>
+            <button class="filter-tab-btn" data-roster-role="Marksman">Marksman</button>
+            <button class="filter-tab-btn" data-roster-role="Tank">Tank</button>
+            <button class="filter-tab-btn" data-roster-role="Support">Support</button>
+          </div>
+
+          <div class="heroes-list-grid" id="allHeroesGrid" style="max-height: 480px;">
+            <!-- Populated by JavaScript with all 132 heroes -->
+          </div>
+        </section>
+
+        <!-- AI Gameplay Diagnostics & Meta Recommendations -->
+        <section class="card" id="diagnostics">
+          <div class="card-header-clean">
+            <span class="card-heading">Gameplay Insights & Strategy</span>
+            <span class="card-subtext">Algorithmic Performance Evaluation</span>
+          </div>
+
+          <div class="insights-grid">
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--status-success); margin-bottom: 10px; text-transform: uppercase;">
+                Key Strengths
+              </div>
+              <div id="strengthsList">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--status-danger); margin-bottom: 10px; text-transform: uppercase;">
+                Areas for Improvement
+              </div>
+              <div id="weaknessesList">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Tactical Suggestions -->
+          <div style="margin-top: 20px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase;">
+              Tactical Recommendations
+            </div>
+            <div class="insights-grid" id="tacticalTipsList">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Recommended Meta Picks -->
+          <div style="margin-top: 24px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--accent-primary); margin-bottom: 10px; text-transform: uppercase;">
+              Recommended Meta Picks (<span id="recRoleTitle">Assassin</span>)
+            </div>
+            <div class="meta-picks-row" id="metaHeroesList">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Match History Table -->
+        <section class="card" id="matches">
+          <div class="card-header-clean">
+            <span class="card-heading">Recent Ranked Matches</span>
+            <span class="card-subtext">Latest 5 Matches</span>
+          </div>
+          <div class="matches-table-wrap">
+            <table class="matches-table">
+              <thead>
+                <tr>
+                  <th>Result</th>
+                  <th>Hero</th>
+                  <th>Mode</th>
+                  <th>KDA</th>
+                  <th>Performance</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody id="recentMatchList">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Screenshot OCR Modal -->
+  <div class="modal-overlay" id="scannerModal">
+    <div class="modal-window">
+      <button class="modal-close-btn" id="btnCloseScanner">&times;</button>
+      <div class="card-heading" style="margin-bottom: 8px;">Upload Screenshot</div>
+      <p style="font-size: 12.5px; color: var(--text-muted);">
+        Upload a screenshot of your in-game profile to auto-extract player statistics.
+      </p>
+
+      <div class="upload-area" id="dropZone">
+        <div style="font-size: 14px; font-weight: 600; color: var(--text-white);">Drag and drop image here</div>
+        <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">or click to select file (PNG, JPG)</div>
+        <input type="file" id="screenshotFileInput" accept="image/*" style="display: none;">
+      </div>
+
+      <div style="margin-top: 14px; display: none; text-align: center;" id="previewContainer">
+        <img id="imagePreview" src="" alt="Preview" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+      </div>
+
+      <div style="margin-top: 16px; display: none;" id="scanProgress">
+        <div style="height: 4px; background: var(--bg-app); border-radius: 2px; overflow: hidden;">
+          <div id="scanProgressBar" style="height: 100%; background: var(--accent-primary); width: 0%; transition: width 0.3s ease;"></div>
+        </div>
+        <div id="scanStatusText" style="font-size: 12px; color: var(--text-muted); margin-top: 8px; text-align: center;">
+          Scanning image...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Manual Entry Modal -->
+  <div class="modal-overlay" id="manualModal">
+    <div class="modal-window">
+      <button class="modal-close-btn" id="btnCloseManual">&times;</button>
+      <div class="card-heading" style="margin-bottom: 8px;">Custom Profile Entry</div>
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;">
+        Input custom statistics to generate an updated analytics dashboard.
+      </p>
+
+      <form id="customProfileForm">
+        <div class="calc-grid-form">
+          <div class="field-group">
+            <label for="customIgn">Player IGN</label>
+            <input type="text" id="customIgn" value="SkyStriker" required>
+          </div>
+          <div class="field-group">
+            <label for="customRank">Current Rank</label>
+            <input type="text" id="customRank" value="Mythical Glory" required>
+          </div>
+          <div class="field-group">
+            <label for="customStars">Rank Stars</label>
+            <input type="number" id="customStars" value="50" min="0">
+          </div>
+          <div class="field-group">
+            <label for="customMatches">Total Matches</label>
+            <input type="number" id="customMatches" value="2500" min="1" required>
+          </div>
+          <div class="field-group">
+            <label for="customWinRate">Overall Win Rate (%)</label>
+            <input type="number" id="customWinRate" step="0.1" value="62.5" min="0" max="100" required>
+          </div>
+          <div class="field-group">
+            <label for="customMvp">MVP Count</label>
+            <input type="number" id="customMvp" value="650" min="0">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Apply Profile</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main JavaScript App Controller -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
